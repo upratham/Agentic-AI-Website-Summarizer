@@ -1,133 +1,170 @@
-# Web Summarizer (OpenAI + BeautifulSoup)
+# Website Summarizer (OpenAI API + Ollama)
 
-A small Jupyter Notebook project that:
+Summarize the content of any web page using either:
 
-- Scrapes a webpage (title + visible text) using **Requests + BeautifulSoup**
-- Summarizes it using the **OpenAI API**
-- Renders the result as **Markdown** inside the notebook
+- **OpenAI API** (cloud models)
+- **Ollama** (local models via an OpenAI-compatible endpoint)
 
-Notebook: `web_Summerizer.ipynb`
+Included notebooks:
 
----
-
-## Features
-
-- Fetch website content: `fetch_website_contents(url)`
-- Summarize a URL with OpenAI: `summarize(url)`
-- Display the summary in a notebook cell: `display_summary(url)`
+- `summerizer_Openai.ipynb` — uses OpenAI API
+- `summerizer_Ollama.ipynb` — uses Ollama running locally on `http://localhost:11434`
 
 ---
 
-## Requirements
+## What’s inside
 
-- Python 3.9+ (recommended)
-- Jupyter Notebook or JupyterLab
-
-Python packages used in the notebook:
-
-- `openai`
-- `python-dotenv`
-- `requests`
-- `beautifulsoup4`
+- Web scraping with `requests` + `BeautifulSoup`
+- A small summarization helper (`summarize(url)`) in each notebook
+- Model calls via the **OpenAI Python SDK** (`from openai import OpenAI`)
 
 ---
 
-## Setup
+## Prerequisites
 
-### 1) Create a virtual environment (recommended)
+- Python **3.10+**
+- Jupyter (Notebook or Lab)
+
+### Install dependencies
+
+You can use a virtual environment (recommended):
 
 ```bash
 python -m venv .venv
+
 # macOS/Linux
 source .venv/bin/activate
+
 # Windows (PowerShell)
-.venv\Scripts\Activate.ps1
+# .venv\Scripts\Activate.ps1
+
+pip install -U pip
 ```
 
-### 2) Install dependencies
+Install packages:
 
 ```bash
-pip install -U openai python-dotenv requests beautifulsoup4
+pip install -U openai python-dotenv beautifulsoup4 requests ipython jupyter
 ```
 
 ---
 
-## Get an OpenAI API key
+## Run the notebooks
 
-1. Create (or sign into) your OpenAI Developer Platform account.
-2. Go to the API keys page:
-   - https://platform.openai.com/account/api-keys
+Start Jupyter:
+
+```bash
+jupyter lab
+# or: jupyter notebook
+```
+
+Then open either:
+
+- `summerizer_Openai.ipynb`
+- `summerizer_Ollama.ipynb`
+
+---
+
+## OpenAI API setup (cloud)
+
+### 1) Create an OpenAI API key
+
+1. Sign in to the OpenAI Developer Platform.
+2. Open the API keys page: https://platform.openai.com/account/api-keys
 3. Click **Create new secret key**.
-4. (Optional) Set permissions for the key.
-5. Copy the key and store it somewhere safe (you typically can’t view the full secret again).
+4. Copy the key and store it securely.
 
-**Important:** Keep your API key private. Don’t commit it to GitHub and don’t paste it into client-side apps.
+### 2) Add the key to your environment
+
+Create a `.env` file in the project root:
+
+```bash
+# .env (do not commit this file)
+OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+The OpenAI notebook loads this key using `python-dotenv`.
+
+### 3) Run `summerizer_Openai.ipynb`
+
+Execute the cells top-to-bottom. Update the `model=` value if you want to use a different OpenAI model.
 
 ---
 
-## Configure your API key (recommended: `.env`)
+## Ollama setup (local)
 
-Create a file named `.env` in the project root:
+The Ollama notebook uses Ollama’s **OpenAI-compatible** endpoint and calls it with the OpenAI Python SDK.
 
-```env
-OPENAI_API_KEY=sk-...your_key_here...
+### 1) Install Ollama
+
+Download/install Ollama for your OS:
+
+- Docs home: https://docs.ollama.com/
+- Quickstart: https://docs.ollama.com/quickstart
+
+### 2) Start Ollama
+
+- **macOS / Windows:** Ollama typically runs in the background after installation and serves an API on `http://localhost:11434`.
+- **Linux:** start the server manually:
+
+```bash
+ollama serve
 ```
 
-Then add `.env` to your `.gitignore`:
+### 3) Pull a model
+
+The notebook uses `llama3.2` by default:
+
+```bash
+ollama pull llama3.2
+```
+
+(You can swap this for any model you have installed.)
+
+### 4) Run `summerizer_Ollama.ipynb`
+
+The notebook points the client to:
+
+```python
+OLLAMA_BASE_URL = "http://localhost:11434/v1"
+ollama = OpenAI(base_url=OLLAMA_BASE_URL, api_key="ollama")
+```
+
+Then it calls:
+
+```python
+ollama.chat.completions.create(model="llama3.2", messages=messages)
+```
+
+---
+
+## Troubleshooting
+
+- **`No API key was found`**: make sure `.env` exists and contains `OPENAI_API_KEY=...`, or export it in your shell.
+- **Connection refused to Ollama**: confirm Ollama is running and listening on `http://localhost:11434`.
+- **Model not found (Ollama)**: run `ollama pull <model>`.
+- **Port already in use**: another Ollama instance may already be running; stop it or free port `11434`.
+
+---
+
+## Security notes
+
+- Never commit `.env` or any API keys.
+- Add this to your `.gitignore`:
 
 ```gitignore
 .env
-```
-
-The notebook uses `python-dotenv` to load the key into the `OPENAI_API_KEY` environment variable.
-
-### Alternative: set an environment variable
-
-```bash
-# macOS/Linux
-export OPENAI_API_KEY="sk-..."
-
-# Windows (PowerShell)
-$env:OPENAI_API_KEY="sk-..."
+.venv/
+__pycache__/
+.ipynb_checkpoints/
 ```
 
 ---
 
-## Run the notebook
+## License
 
-```bash
-jupyter notebook
-# or
-jupyter lab
-```
+Add a license that fits your project (MIT, Apache-2.0, etc.).
 
-Open `web_Summerizer.ipynb` and run the cells.
-
----
-
-## Quick usage
-
-Inside the notebook:
-
-```python
-display_summary("https://example.com")
-```
-
----
-
-## Notes & troubleshooting
-
-- Some websites block automated requests. The notebook sets a browser-like `User-Agent`, but a site may still deny access.
-- If you get an authentication error, confirm `OPENAI_API_KEY` is set/loaded and that you copied the key correctly.
-
----
-
-## Security
-
-- Treat your API key like a password.
-- Rotate/revoke keys you believe were exposed.
-
----
 
 ## Author
 
