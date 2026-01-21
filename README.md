@@ -163,7 +163,7 @@ __pycache__/
 
 ## License
 
-Add a license that fits your project (MIT, Apache-2.0, etc.).
+MIT
 
 
 ## Author
@@ -171,6 +171,3 @@ Add a license that fits your project (MIT, Apache-2.0, etc.).
 - **Prathamesh Uravane**
 - **Email:** upratham2002@gmail.com
 
-## License
-
-Add a license if you plan to make this public (MIT/Apache-2.0 are common choices).
